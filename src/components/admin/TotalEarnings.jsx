@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../../lib/api';
 import { useNavigate } from 'react-router-dom';
 
 const TotalEarnings = () => {
@@ -7,26 +7,27 @@ const TotalEarnings = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchEarnings = async () => {
-            setLoading(true);
-            try {
-                const token = localStorage.getItem('token');
-                const config = { headers: { 'x-auth-token': token } };
-                const { data } = await axios.get('/api/orders/earnings', config);
-                setEarnings(data);
-            } catch (error) {
-                if (error.response?.data?.msg === 'Token is not valid') {
-                    localStorage.removeItem('token');
-                    navigate('/login');
-                }
-                console.error("Failed to fetch earnings", error);
-            } finally {
-                setLoading(false);
+    const fetchEarnings = useCallback(async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { 'x-auth-token': token } };
+            const { data } = await api.get('/api/orders/earnings');
+            setEarnings(data);
+        } catch (error) {
+            if (error.response?.data?.msg === 'Token is not valid') {
+                localStorage.removeItem('token');
+                navigate('/login');
             }
-        };
-        fetchEarnings();
+            console.error("Failed to fetch earnings", error);
+        } finally {
+            setLoading(false);
+        }
     }, [navigate]);
+
+    useEffect(() => {
+        fetchEarnings();
+    }, [fetchEarnings]);
 
     if (loading) return <p>Calculating earnings...</p>;
 

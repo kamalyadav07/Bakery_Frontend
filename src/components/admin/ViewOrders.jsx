@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api from '../../lib/api';
 import { useNavigate } from 'react-router-dom';
 
 const ViewOrders = () => {
@@ -12,7 +12,7 @@ const ViewOrders = () => {
         try {
             const token = localStorage.getItem('token');
             const config = { headers: { 'x-auth-token': token } };
-            const { data } = await axios.get('/api/orders', config);
+            const { data } = await api.get('/api/orders');
             setOrders(data);
         } catch (error) {
             if (error.response?.data?.msg === 'Token is not valid') {
@@ -40,7 +40,7 @@ const ViewOrders = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { 'Content-Type': 'application/json', 'x-auth-token': token } };
             const body = { status, declineReason };
-            await axios.put(`/api/orders/${id}/status`, body, config);
+            await api.put(`/api/orders/${id}/status`, body);
             fetchOrders(); // Refresh the list
         } catch (error) {
             console.error("Failed to update order status", error);

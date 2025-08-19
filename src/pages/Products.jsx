@@ -1,35 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import ProductItem from '../components/products/ProductItem';
 
 const Products = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const res = await axios.get('/api/products');
-                setProducts(res.data);
+                const res = await api.get('/api/products');
+                // Filter for available products on the frontend
+                setProducts(res.data.filter(p => p.isAvailable));
             } catch (err) {
-                setError('Could not fetch products. Please try again later.');
                 console.error(err);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchProducts();
     }, []);
 
-    if (loading) {
-        return <h2 style={{ textAlign: 'center' }}>Loading our delicious bakes...</h2>;
-    }
-
-    if (error) {
-        return <div className="error-text">{error}</div>;
-    }
+    if (loading) return <h2 style={{ textAlign: 'center' }}>Loading our delicious bakes...</h2>;
 
     return (
         <div>
@@ -40,17 +32,12 @@ const Products = () => {
                         <ProductItem key={product._id} product={product} />
                     ))
                 ) : (
-                    <p>No products found. The ovens are warming up!</p>
+                    <p style={{textAlign: 'center'}}>No products are available at the moment. Please check back soon!</p>
                 )}
             </div>
         </div>
     );
 };
 
-const productsGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '2rem',
-};
-
+const productsGridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem' };
 export default Products;
